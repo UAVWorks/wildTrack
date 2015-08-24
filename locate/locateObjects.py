@@ -10,6 +10,7 @@ def locate(filename, start, frames, outputfilename):
     cap.set(cv2.CAP_PROP_POS_FRAMES,start)
  
     # parameters for object detection    
+    # find out more about parameters here http://www.learnopencv.com/blob-detection-using-opencv-python-c/
     params = cv2.SimpleBlobDetector_Params()
     params.maxThreshold= 100
     params.minThreshold= 25
