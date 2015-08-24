@@ -20,9 +20,10 @@ def showLinkedTracks(filename, start, frames, outputfilename):
     
     
     for tt in range(frames):
+        
         # Capture frame-by-frame
         _, frame = cap.read()
-        
+        if (tt%15) > 0 : continue
         thisFrame = linkedDF.ix[linkedDF['frame']==tt]
 
         
@@ -30,6 +31,9 @@ def showLinkedTracks(filename, start, frames, outputfilename):
         sz=6
         
         for i, row in thisFrame.iterrows():
+            #if int(row['particle'])!=628:
+            #    continue
+            
             cv2.putText(frame ,str(int(row['particle'])) ,((int(row['x'])+12, int(row['y'])+12)), cv2.FONT_HERSHEY_SIMPLEX, 0.8,255,2)
             cv2.rectangle(frame, ((int( row['x'])-sz, int( row['y'])-sz)),((int( row['x'])+sz, int( row['y'])+sz)),(0,0,0),2)
             

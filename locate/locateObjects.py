@@ -5,7 +5,7 @@ import os,sys
 import math as m
 import pandas as pd
 
-def locate(filename, start, frames, outputfilename):
+def locate(filename, outputfilename):
     
 
     df = pd.DataFrame(columns= ['x', 'y', 'mass', 'size', 'ecc', 'signal', 'ep', 'frame'])
@@ -14,8 +14,8 @@ def locate(filename, start, frames, outputfilename):
 
     
     cap = cv2.VideoCapture(filename)
-    cap.set(cv2.CAP_PROP_POS_FRAMES,start)
- 
+     
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)  )
     # parameters for object detection    
     # find out more about parameters here http://www.learnopencv.com/blob-detection-using-opencv-python-c/
     params = cv2.SimpleBlobDetector_Params()
@@ -34,9 +34,10 @@ def locate(filename, start, frames, outputfilename):
 
     
     for tt in range(frames):
+        print(tt)
         # Capture frame-by-frame
         _, frame = cap.read()
-        
+        if (tt%15) > 0 : continue
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         cv2image = 255-cv2image
  
@@ -53,10 +54,10 @@ def locate(filename, start, frames, outputfilename):
             thisFrame.set_value(ind, 'frame', tt)
         df = pd.concat([df,thisFrame])
 
-        cv2.imshow('frame',frame)
-        k = cv2.waitKey(30) & 0xff
-        if k == 27:
-            break
+        #cv2.imshow('frame',frame)
+        #k = cv2.waitKey(30) & 0xff
+        #if k == 27:
+        #    break
     
     df.to_csv(outputfilename)
     cv2.destroyAllWindows()
@@ -64,10 +65,7 @@ def locate(filename, start, frames, outputfilename):
 
 if __name__ == '__main__':
     FULLNAME = sys.argv[1]
-    frameStart = 0
-    frameLength = int(sys.argv[3])
     path, filename = os.path.split(FULLNAME)
     noext, ext = os.path.splitext(filename)
-    allTransforms=np.zeros((frameLength,3))
     outputfilename = noext + '.csv' 
-    locate(FULLNAME, frameStart, frameLength, outputfilename)
+    locate(FULLNAME,  outputfilename)
