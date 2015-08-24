@@ -6,6 +6,13 @@ import math as m
 import pandas as pd
 
 def locate(filename, start, frames, outputfilename):
+    
+
+    df = pd.DataFrame(columns= ['x', 'y', 'mass', 'size', 'ecc', 'signal', 'ep', 'frame'])
+    
+    
+
+    
     cap = cv2.VideoCapture(filename)
     cap.set(cv2.CAP_PROP_POS_FRAMES,start)
  
@@ -36,13 +43,22 @@ def locate(filename, start, frames, outputfilename):
         blobs= blobdetector.detect(cv2image)
         # draw detected objects and display
         sz=6
+        thisFrame = pd.DataFrame(columns= ['x', 'y', 'mass', 'size', 'ecc', 'signal', 'ep', 'frame'])
+        ind = 0
         for b in blobs:
+            ind +=1
             cv2.rectangle(frame, ((int(b.pt[0])-sz, int(b.pt[1])-sz)),((int(b.pt[0])+sz, int(b.pt[1])+sz)),(0,0,0),2)
-        cv2.imshow('framea',frame)
+            thisFrame.set_value(ind, 'x', b.pt[0])
+            thisFrame.set_value(ind, 'y', b.pt[1])
+            thisFrame.set_value(ind, 'frame', tt)
+        df = pd.concat([df,thisFrame])
+
+        cv2.imshow('frame',frame)
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             break
-        
+    
+    df.to_csv(outputfilename)
     cv2.destroyAllWindows()
     cap.release()
 
@@ -53,5 +69,5 @@ if __name__ == '__main__':
     path, filename = os.path.split(FULLNAME)
     noext, ext = os.path.splitext(filename)
     allTransforms=np.zeros((frameLength,3))
-    outputname = noext + '_FRW' + str(frameStart) + '.avi' 
-    locate(FULLNAME, frameStart, frameLength, outputname)
+    outputfilename = noext + '.csv' 
+    locate(FULLNAME, frameStart, frameLength, outputfilename)
