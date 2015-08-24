@@ -1,81 +1,56 @@
 
 import cv2
-import cv
 import numpy as np
-import sys
-# the mock-0.3.1 dir contains testcase.py, testutils.py & mock.py
-sys.path.append('../fhgClassifier/')
+import os,sys
+import math as m
+import pandas as pd
 
-from SimpleCV import SVMClassifier
-from SimpleCV import Image, Display
-from circularHOGExtractor import circularHOGExtractor
+def locate(filename, start, frames, outputfilename):
+    cap = cv2.VideoCapture(filename)
+    cap.set(cv2.CAP_PROP_POS_FRAMES,start)
+ 
+    # parameters for object detection    
+    params = cv2.SimpleBlobDetector_Params()
+    params.maxThreshold= 100
+    params.minThreshold= 25
+    params.thresholdStep= 1
+    params.filterByArea= 1
+    params.maxArea= 25
+    params.minArea= 4
+    params.filterByCircularity= 0
+    params.filterByInertia= 0
+    params.filterByConvexity= 0
 
 
-cap = cv2.VideoCapture('/home/ctorney/data/wildebeest/from_grant/GOPR0076.MP4')
-cap.set(cv.CV_CAP_PROP_POS_FRAMES,10000)
+    blobdetector = cv2.SimpleBlobDetector_create(params)
 
-ex = int(cap.get(cv.CV_CAP_PROP_FOURCC))
-#     outputVideo.open(outMovie, ex, cap.get(CV_CAP_PROP_FPS), S, true);
-S = (int(cap.get(cv.CV_CAP_PROP_FRAME_WIDTH)), int(cap.get(cv.CV_CAP_PROP_FRAME_HEIGHT)))
+    
+    for tt in range(frames):
+        # Capture frame-by-frame
+        _, frame = cap.read()
+        
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        cv2image = 255-cv2image
+ 
+        blobs= blobdetector.detect(cv2image)
+        # draw detected objects and display
+        sz=6
+        for b in blobs:
+            cv2.rectangle(frame, ((int(b.pt[0])-sz, int(b.pt[1])-sz)),((int(b.pt[0])+sz, int(b.pt[1])+sz)),(0,0,0),2)
+        cv2.imshow('framea',frame)
+        k = cv2.waitKey(30) & 0xff
+        if k == 27:
+            break
+        
+    cv2.destroyAllWindows()
+    cap.release()
 
-   
-out = cv2.VideoWriter('/home/ctorney/Dropbox/output.avi', cv.CV_FOURCC('M','J','P','G'), cap.get(cv.CV_CAP_PROP_FPS), S, True)
-
-params = cv2.SimpleBlobDetector_Params()
-params.minDistBetweenBlobs = 1.0;
-params.filterByInertia = False;
-params.filterByConvexity = False;
-params.filterByColor = False;
-params.filterByCircularity = False;
-params.filterByArea = True;
-params.minArea = 5.0;
-params.maxArea = 100.0;
-params.minThreshold = 15;
-params.maxThreshold = 255;
-
-b = cv2.SimpleBlobDetector(params)
-
-cl = SVMClassifier.load('../trainClassifier/svmWildebeest.xml')
-classes = []
-classes.append('yes')
-classes.append('no')
-
-box_dim = 48
-
-ret, oldframe = cap.read()
-ret, frame = cap.read()
-M_ALL = cv2.estimateRigidTransform(oldframe,frame,0)
-M_ALL = np.vstack([M_ALL,(0,0,1)])
-print M_ALL
-for tt in range(1500):
-    print tt
-# Capture frame-by-frame
-    ret, frame = cap.read()
-
-    blob = b.detect(frame)
-    M = cv2.estimateRigidTransform(frame,oldframe,0)
-    M_ALL = np.dot(np.vstack([M,(0,0,1)]),M_ALL)
-    np.copyto(oldframe,frame)
-
-    for beest in blob:
-        tmpImg = Image(frame, cv2image=True).crop(int(beest.pt[0]),int(beest.pt[1]),box_dim,box_dim,centered=True)
-        if ((tmpImg.width + tmpImg.height) == 2*box_dim):
-            isit = cl.classify(tmpImg)
-            if isit=='yes':
-                cv2.circle(frame, ((int(beest.pt[0]), int(beest.pt[1]))),4,255,1)
-#cv2.drawKeyPoints(frame, beest, frame)
-
-        # Our operations on the frame come here
-#    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        # Display the resulting frame
-    showframe = cv2.warpAffine(frame,M_ALL[0:2,:],S) 
- #/   cv2.imshow('frame',showframe)
-    out.write(showframe)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# When everything done, release the capture
-cap.release()
-cv2.destroyAllWindows()
-
+if __name__ == '__main__':
+    FULLNAME = sys.argv[1]
+    frameStart = 0
+    frameLength = int(sys.argv[3])
+    path, filename = os.path.split(FULLNAME)
+    noext, ext = os.path.splitext(filename)
+    allTransforms=np.zeros((frameLength,3))
+    outputname = noext + '_FRW' + str(frameStart) + '.avi' 
+    locate(FULLNAME, frameStart, frameLength, outputname)
