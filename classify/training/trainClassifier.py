@@ -5,12 +5,14 @@ import pickle
 
 
 from sklearn import svm
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 
 sys.path.append('../.')
 
 from circularHOGExtractor import circularHOGExtractor
-ch = circularHOGExtractor(8,1,4) 
+ch = circularHOGExtractor(4,2,4) 
 
 cls0 = './no/'
 cls1 = './yes/'
@@ -34,8 +36,9 @@ for imName in lst1:
     trainData[i,:] = ch.extract(thisIm)
     i = i + 1
 
-clf = svm.SVC()
+#clf = svm.SVC()
 
+clf = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),algorithm="SAMME",n_estimators=50)
 y_pred = clf.fit(trainData,targetData)
 pickle.dump(clf, open( "../svmClassifier.p","wb"))
 y_pred = clf.predict(trainData)
