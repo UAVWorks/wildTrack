@@ -50,9 +50,11 @@ def showLinkedTracks(filename, start, frames, outputfilename):
     out.release()
 
 if __name__ == '__main__':
-    FULLNAME = sys.argv[1]
+    FULLNAME ='/home/ctorney/data/wildebeest/test.avi'# 0 3600
+
+    # sys.argv[1]
     frameStart = 0
-    frameLength = int(sys.argv[3])
+    frameLength = 3600# int(sys.argv[3])
     path, filename = os.path.split(FULLNAME)
     noext, ext = os.path.splitext(filename)
     allTransforms=np.zeros((frameLength,3))

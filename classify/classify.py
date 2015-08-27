@@ -10,12 +10,15 @@ import pickle
 
 
 from sklearn import svm
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+
 
 
 sys.path.append('../.')
 
 from circularHOGExtractor import circularHOGExtractor
-ch = circularHOGExtractor(8,1,4) 
+ch = circularHOGExtractor(4,2,4) 
 
 fhgClass = pickle.load( open( "svmClassifier.p", "rb" ) )
 
